@@ -1,4 +1,6 @@
+type JSONParsable = boolean | number | string | object | null;
+
 export interface DataItem {
   key: string;
-  value: any;
+  value: JSONParsable | Array<JSONParsable>;
 }
