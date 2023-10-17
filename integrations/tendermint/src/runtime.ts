@@ -25,11 +25,17 @@ interface IEvent {
 }
 
 export default class Tendermint implements IRuntime {
-  public name = name;
-  public version = version;
   public config!: IConfig;
 
-  async validateSetConfig(rawConfig: string): Promise<void> {
+  async getName(): Promise<string> {
+    return name;
+  }
+
+  async getVersion(): Promise<string> {
+    return version;
+  }
+
+  async validateSetConfig(rawConfig: string): Promise<string> {
     const config: IConfig = JSON.parse(rawConfig);
 
     if (!config.network) {
@@ -45,9 +51,10 @@ export default class Tendermint implements IRuntime {
     }
 
     this.config = config;
+    return JSON.stringify(config);
   }
 
-  async getDataItem(_: Validator, key: string): Promise<DataItem> {
+  async getDataItem(key: string): Promise<DataItem> {
     // fetch block from rpc at given block height
     const {
       data: { result: block },
@@ -61,7 +68,7 @@ export default class Tendermint implements IRuntime {
     return { key, value: { block, block_results } };
   }
 
-  async prevalidateDataItem(_: Validator, item: DataItem): Promise<boolean> {
+  async prevalidateDataItem(item: DataItem): Promise<boolean> {
     // check if data item is defined
     if (!item.value) {
       return false;
@@ -104,7 +111,7 @@ export default class Tendermint implements IRuntime {
     return true;
   }
 
-  async transformDataItem(_: Validator, item: DataItem): Promise<DataItem> {
+  async transformDataItem(item: DataItem): Promise<DataItem> {
     // this method sorts all attributes of all events to ensure
     // determinism. Furthermore, the "log" property gets deleted from
     // the transaction results, since it contains duplicate information.
@@ -179,7 +186,6 @@ export default class Tendermint implements IRuntime {
   }
 
   async validateDataItem(
-    _: Validator,
     proposedDataItem: DataItem,
     validationDataItem: DataItem
   ): Promise<number> {
@@ -203,12 +209,12 @@ export default class Tendermint implements IRuntime {
     return VOTE.INVALID
   }
 
-  async summarizeDataBundle(_: Validator, bundle: DataItem[]): Promise<string> {
+  async summarizeDataBundle(bundle: DataItem[]): Promise<string> {
     // use latest block height as bundle summary
     return bundle.at(-1)?.value?.block?.block?.header?.height ?? '';
   }
 
-  async nextKey(_: Validator, key: string): Promise<string> {
+  async nextKey(key: string): Promise<string> {
     // the next key is always current block height + 1
     return (parseInt(key) + 1).toString();
   }

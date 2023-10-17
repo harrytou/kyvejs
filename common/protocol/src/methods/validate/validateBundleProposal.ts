@@ -163,6 +163,10 @@ export async function validateBundleProposal(
               proposedBundle[i],
               validationBundle[i]
             );
+            valid = await this.runtime.validateDataItem(
+              proposedBundle[i],
+              validationBundle[i]
+            );
 
             // vote abstain if data item validation returned abstain
             if (vote === VOTE.ABSTAIN) {
@@ -205,7 +209,7 @@ export async function validateBundleProposal(
           );
 
           const bundleSummary = await this.runtime
-            .summarizeDataBundle(this, proposedBundle)
+            .summarizeDataBundle(proposedBundle)
             .catch((err) => {
               this.logger.error(
                 `Unexpected error summarizing bundle with runtime. Voting abstain ...`
